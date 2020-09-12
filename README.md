@@ -1,4 +1,4 @@
-[![#](https://img.shields.io/nuget/v/Leira.EventSourcing.svg?style=flat-square)](https://www.nuget.org/packages/Leira.TrackZero.NetCore)
+[![#](https://img.shields.io/nuget/v/Leira.TrackZero.NetCore.svg?style=flat-square)](https://www.nuget.org/packages/Leira.TrackZero.NetCore)
 ![#](https://img.shields.io/github/license/leiratech/TrackZero.DotNetCore?style=flat-square)
 
 # TrackZero
