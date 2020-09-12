@@ -1,6 +1,15 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Net;
 using System.Net.Http;
+using System.Security.Authentication;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
+using TrackZero.DataTransfer;
 
 namespace TrackZero
 {
@@ -10,7 +19,7 @@ namespace TrackZero
         private Uri baseUri;
         private string projectId;
         private string projectSecret;
-
+        TokenResponse tokenResponse;
         public TrackZeroClient(IHttpClientFactory clientFactory, string connectionString)
         {
             this.clientFactory = clientFactory;
@@ -28,7 +37,7 @@ namespace TrackZero
         private void initializeFromConnectionString(string connectionString)
         {
             var connectionArray = connectionString.Split(';');
-            if (connectionArray.Length< 3)
+            if (connectionArray.Length < 3)
                 throw new InvalidEnumArgumentException("Invalid Connection String");
 
             foreach (var configLine in connectionArray)
@@ -59,7 +68,98 @@ namespace TrackZero
             }
         }
 
+        AutoResetEvent tokenAquisitionLock = new AutoResetEvent(true);
+        private async Task<string> getTokenAsync()
+        {
 
+            if (tokenResponse?.IsValid ?? false)
+            {
+                return tokenResponse.access_token;
+            }
 
+            tokenAquisitionLock.WaitOne();
+
+            if (tokenResponse?.IsValid ?? false)
+            {
+                tokenAquisitionLock.Set();
+                return tokenResponse.access_token;
+            }
+
+            HttpClient httpClient = clientFactory.CreateClient("TrackZero");
+
+            try
+            {
+                FormUrlEncodedContent formUrlEncodedContent = new FormUrlEncodedContent(new Dictionary<string, string>()
+                {
+                    { "grant_type", "client_credentials" },
+                    { "client_id", projectId },
+                    { "client_secret", projectSecret }
+                });
+                
+                var response = await httpClient.PostAsync("/connect/token", formUrlEncodedContent).ConfigureAwait(false);
+                //var str = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    throw new InvalidCredentialException("Invalid Project Id or Project Secret");
+                }
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonResponse = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(jsonResponse);
+                    return tokenResponse.access_token;
+                }
+
+                throw new Exception("Unable to obtain token, check internet connectivity and try again.");
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            finally
+            {
+                httpClient.Dispose();
+                tokenAquisitionLock.Set();
+            }
+        }
+
+        public async Task<Entity> UpsertEntityAsync(Entity entity)
+        {
+            HttpClient httpClient = clientFactory.CreateClient("TrackZero");
+            try
+            {
+                string token = await getTokenAsync().ConfigureAwait(false);
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+                var response = await httpClient.PutAsync("/v1.0/Tracking/entities", new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                return entity;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            finally
+            {
+                httpClient.Dispose();
+            }
+        }
+        public async Task<Event> TrackEventAsync(Event @event)
+        {
+            HttpClient httpClient = clientFactory.CreateClient("TrackZero");
+            try
+            {
+                string token = await getTokenAsync().ConfigureAwait(false);
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+                var response = await httpClient.PutAsync("/v1.0/Tracking/events", new StringContent(JsonConvert.SerializeObject(@event), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                return @event;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            finally
+            {
+                httpClient.Dispose();
+            }
+        }
     }
 }

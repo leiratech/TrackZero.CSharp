@@ -14,7 +14,6 @@ namespace TrackZero.Extensions
                                        typeof(string), typeof(DateTime?), typeof(DateTimeOffset?), typeof(bool?), typeof(Guid?)};
         internal static void ValidatePremitiveValueOrReferenceType(this object obj)
         {
-
             if (obj != default && !allowedTypes.Contains(obj.GetType()) && !(obj is IEntityReference))
             {
                 throw new InvalidOperationException($"Type {obj.GetType().Name} is not a premitive type. Only premitive types and IEntityReference objects are allowed");
@@ -23,7 +22,6 @@ namespace TrackZero.Extensions
 
         internal static void ValidatePremitiveValue(this object obj)
         {
-
             if (obj != default && !allowedTypes.Contains(obj.GetType()))
             {
                 throw new InvalidOperationException($"Type {obj.GetType().Name} is not a premitive type. Only premitive types and IEntityReference objects are allowed");
