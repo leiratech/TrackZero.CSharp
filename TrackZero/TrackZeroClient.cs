@@ -123,6 +123,11 @@ namespace TrackZero
             }
         }
 
+        /// <summary>
+        /// Adds a new entity if it doesn't exist (based on Id and Type) or updates existing one if it exists.
+        /// </summary>
+        /// <param name="entity">Entity to create. Any EntityReference in CustomAttributes will automatically be created if do not exist.</param>
+        /// <returns></returns>
         public async Task<Entity> UpsertEntityAsync(Entity entity)
         {
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
@@ -142,6 +147,31 @@ namespace TrackZero
                 httpClient.Dispose();
             }
         }
+
+        public async Task<IEnumerable<Entity>> UpsertEntityAsync(IEnumerable<Entity> entities)
+        {
+            HttpClient httpClient = clientFactory.CreateClient("TrackZero");
+            try
+            {
+                string token = await getTokenAsync().ConfigureAwait(false);
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+                var response = await httpClient.PutAsync("/v1.0/Tracking/entities/bulk", new StringContent(JsonConvert.SerializeObject(entities), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                return entities;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            finally
+            {
+                httpClient.Dispose();
+            }
+        }
+        /// <summary>
+        /// Adds a new event.
+        /// </summary>
+        /// <param name="event">Event to create. Any EntityReference in CustomAttributes, Emitter and Targets will automatically be created if do not exist.</param>
+        /// <returns></returns>
         public async Task<Event> TrackEventAsync(Event @event)
         {
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
@@ -150,7 +180,29 @@ namespace TrackZero
                 string token = await getTokenAsync().ConfigureAwait(false);
                 httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
                 var response = await httpClient.PutAsync("/v1.0/Tracking/events", new StringContent(JsonConvert.SerializeObject(@event), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                var st = await response.Content.ReadAsStringAsync();
                 return @event;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            finally
+            {
+                httpClient.Dispose();
+            }
+        }
+
+        public async Task<IEnumerable<Event>> TrackEventAsync(IEnumerable<Event> events)
+        {
+            HttpClient httpClient = clientFactory.CreateClient("TrackZero");
+            try
+            {
+                string token = await getTokenAsync().ConfigureAwait(false);
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+                var response = await httpClient.PutAsync("/v1.0/Tracking/events/bulk", new StringContent(JsonConvert.SerializeObject(events), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                var st = await response.Content.ReadAsStringAsync();
+                return events;
             }
             catch (Exception ex)
             {

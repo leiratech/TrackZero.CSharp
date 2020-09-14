@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TrackZero</name>
+    </assembly>
+    <members>
+        <member name="M:TrackZero.DataTransfer.Entity.#ctor(System.Object,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.Nullable{System.DateTime},System.String)">
+            <summary>
+            Creates a new Entity Object
+            </summary>
+            <param name="id">The id of the object, this Id is your own Id. It must be premitive type (ie. numeric, string, Guid)</param>
+            <param name="type">The name of the entity type (ie. Car, Driver, User...etc)</param>
+            <param name="customAttributes">Any custom attributes you would like to include, the value can be a premitive type or an EntityReference</param>
+            <param name="creationTime">The time when this entity was created. Default is DateTime.UtcNow</param>
+            <param name="ipAddress" >The ip address of the entity creator, this is useful if you are tracking users, it will translate into a location in the dashboard.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when id is null</exception>
+            <exception cref="T:System.InvalidOperationException">Thrown when id or any customAttribute are not premitive type.</exception>
+            <returns>Returns the entity you created or throws exception on error</returns>
+        </member>
+        <member name="M:TrackZero.DataTransfer.EntityReference.#ctor(System.String,System.Object)">
+            <summary>
+            Creates new reference to be used in events or entities.
+            </summary>
+            <param name="id">The id of the emitter entity, this Id is your own generated Id. It must be premitive type (ie. numeric, string, Guid)</param>
+            <param name="type">The name of the entity type (ie. Car, Driver, User...etc)</param>
+        </member>
+        <member name="M:TrackZero.TrackZeroClient.UpsertEntityAsync(TrackZero.DataTransfer.Entity)">
+            <summary>
+            Adds a new entity if it doesn't exist (based on Id and Type) or updates existing one if it exists.
+            </summary>
+            <param name="entity">Entity to create. Any EntityReference in CustomAttributes will automatically be created if do not exist.</param>
+            <returns></returns>
+        </member>
+        <member name="M:TrackZero.TrackZeroClient.TrackEventAsync(TrackZero.DataTransfer.Event)">
+            <summary>
+            Adds a new event.
+            </summary>
+            <param name="event">Event to create. Any EntityReference in CustomAttributes, Emitter and Targets will automatically be created if do not exist.</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

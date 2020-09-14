@@ -2,6 +2,21 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <PackageId>Leira.TrackZero.NetCore</PackageId>
+    <Version>0.0.1</Version>
+    <Authors>Adel Alzubeir</Authors>
+    <Description>TrackZero is a full analytics platform that allows you to track what is happening in your system easily.</Description>
+    <Copyright>2020 LEİRA BİLİŞİM TİCARET LİMİTED ŞİRKETİ</Copyright>
+    <Company>LEİRA BİLİŞİM TİCARET LİMİTED ŞİRKETİ</Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReleaseNotes>Initial</PackageReleaseNotes>
+    <PackageProjectUrl>track0.leira.io</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>C:\Users\adelz\source\repos\Leira\TrackZero\TrackZero.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

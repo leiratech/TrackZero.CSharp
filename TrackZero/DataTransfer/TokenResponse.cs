@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TrackZero.DataTransfer
 {
-    public class TokenResponse
+    internal class TokenResponse
     {
         public TokenResponse()
         {
