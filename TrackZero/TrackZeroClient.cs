@@ -95,7 +95,7 @@ namespace TrackZero
                     { "client_id", projectId },
                     { "client_secret", projectSecret }
                 });
-                
+
                 var response = await httpClient.PostAsync("/connect/token", formUrlEncodedContent).ConfigureAwait(false);
                 //var str = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
@@ -136,7 +136,12 @@ namespace TrackZero
                 string token = await getTokenAsync().ConfigureAwait(false);
                 httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
                 var response = await httpClient.PutAsync("/v1.0/Tracking/entities", new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json")).ConfigureAwait(false);
-                return entity;
+                if (response.IsSuccessStatusCode)
+                {
+                    return entity;
+                }
+
+                throw new Exception("Unknown Error Occured");
             }
             catch (Exception ex)
             {
@@ -156,7 +161,12 @@ namespace TrackZero
                 string token = await getTokenAsync().ConfigureAwait(false);
                 httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
                 var response = await httpClient.PutAsync("/v1.0/Tracking/entities/bulk", new StringContent(JsonConvert.SerializeObject(entities), Encoding.UTF8, "application/json")).ConfigureAwait(false);
-                return entities;
+                if (response.IsSuccessStatusCode)
+                {
+                    return entities;
+                }
+
+                throw new Exception("Unknown Error Occured");
             }
             catch (Exception ex)
             {
@@ -180,8 +190,12 @@ namespace TrackZero
                 string token = await getTokenAsync().ConfigureAwait(false);
                 httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
                 var response = await httpClient.PutAsync("/v1.0/Tracking/events", new StringContent(JsonConvert.SerializeObject(@event), Encoding.UTF8, "application/json")).ConfigureAwait(false);
-                var st = await response.Content.ReadAsStringAsync();
-                return @event;
+                if (response.IsSuccessStatusCode)
+                {
+                    return @event;
+                }
+
+                throw new Exception("Unknown Error Occured");
             }
             catch (Exception ex)
             {
@@ -201,8 +215,12 @@ namespace TrackZero
                 string token = await getTokenAsync().ConfigureAwait(false);
                 httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
                 var response = await httpClient.PutAsync("/v1.0/Tracking/events/bulk", new StringContent(JsonConvert.SerializeObject(events), Encoding.UTF8, "application/json")).ConfigureAwait(false);
-                var st = await response.Content.ReadAsStringAsync();
-                return events;
+                if (response.IsSuccessStatusCode)
+                {
+                    return events;
+                }
+
+                throw new Exception("Unknown Error Occured");
             }
             catch (Exception ex)
             {
