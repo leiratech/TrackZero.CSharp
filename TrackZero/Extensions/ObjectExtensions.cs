@@ -8,11 +8,18 @@ namespace TrackZero.Extensions
 {
     internal static class ObjectExtensions
     {
-        static Type[] allowedTypes = { typeof(int), typeof(long), typeof(double), typeof(float), typeof(decimal), 
-                                       typeof(string), typeof(DateTime), typeof(DateTimeOffset), typeof(bool), typeof(Guid),
-                                       typeof(int?), typeof(long?), typeof(double?), typeof(float?), typeof(decimal?), 
-                                       typeof(string), typeof(DateTime?), typeof(DateTimeOffset?), typeof(bool?), typeof(Guid?)};
-        internal static void ValidatePremitiveValueOrReferenceType(this object obj)
+        static Type[] allowedTypes = { typeof(int), typeof(int?),
+                                       typeof(long), typeof(long?),
+                                       typeof(double), typeof(double?),
+                                       typeof(float), typeof(float?),
+                                       typeof(decimal), typeof(decimal?),
+                                       typeof(string), 
+                                       typeof(DateTime), typeof(DateTime?),
+                                       typeof(DateTimeOffset), typeof(DateTimeOffset?),
+                                       typeof(bool), typeof(bool?),
+                                       typeof(Guid),typeof(Guid?)};
+
+        internal static void ValidateTypeForPremitiveValueOrReferenceType(this object obj)
         {
             if (obj != default && !allowedTypes.Contains(obj.GetType()) && !(obj is IEntityReference))
             {
@@ -20,7 +27,7 @@ namespace TrackZero.Extensions
             }
         }
 
-        internal static void ValidatePremitiveValue(this object obj)
+        internal static void ValidateTypeForPremitiveValue(this object obj)
         {
             if (obj != default && !allowedTypes.Contains(obj.GetType()))
             {

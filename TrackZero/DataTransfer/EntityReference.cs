@@ -13,9 +13,9 @@ namespace TrackZero.DataTransfer
         /// <param name="type">The name of the entity type (ie. Car, Driver, User...etc)</param>
         public EntityReference(string type, object id)
         {
-            id.ValidatePremitiveValue();
-            Id = id ?? throw new ArgumentNullException(nameof(id));
-            Type = type ?? throw new ArgumentNullException(nameof(type));
+            Id = id;
+            Type = type;
+            Validate();
         }
 
         private EntityReference()
@@ -23,9 +23,21 @@ namespace TrackZero.DataTransfer
 
         }
 
+        public void Validate()
+        {
+            Id.ValidateTypeForPremitiveValue();
+            if (Id == default)
+            {
+                throw new ArgumentNullException(nameof(Id));
+            }
+
+            if (string.IsNullOrEmpty(Type) || string.IsNullOrWhiteSpace(Type))
+            {
+                throw new ArgumentNullException(nameof(Type));
+            }
+        }
 
         public object Id { get; set; }
         public string Type { get; set; }
     }
-
 }

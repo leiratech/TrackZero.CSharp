@@ -4,9 +4,11 @@ using System.Text;
 
 namespace TrackZero.Abstract
 {
-    internal interface IEntityReference
+    public interface IEntityReference
     {
         public string Type { get; set; }
         public object Id { get; }
+
+        public void Validate();
     }
 }

@@ -8,20 +8,16 @@ namespace TrackZero
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddTrackZero(this IServiceCollection serviceCollection, Uri baseUri, string projectId, string projectSecret)
+        public static IServiceCollection AddTrackZero(this IServiceCollection serviceCollection, string projectApiKey)
         {
             serviceCollection
-                .AddHttpClient("TrackZero", c => c.BaseAddress = baseUri);
-            return serviceCollection.AddSingleton<TrackZeroClient>(sp => new TrackZeroClient(sp.GetRequiredService<IHttpClientFactory>(), baseUri, projectId, projectSecret));
-        }
-
-        public static IServiceCollection AddTrackZero(this IServiceCollection serviceCollection, string connectionString)
-        {
-
-            serviceCollection
-                .AddHttpClient("TrackZero");
-            return serviceCollection.AddSingleton<TrackZeroClient>(sp => new TrackZeroClient(sp.GetRequiredService<IHttpClientFactory>(), connectionString));
-
+                .AddHttpClient("TrackZero", c =>
+                {
+                    c.BaseAddress = new Uri("https://api.trackzero.io");
+                    c.DefaultRequestHeaders.Add("X-API-KEY", projectApiKey);
+                    c.DefaultRequestHeaders.Add("X-API-VERSION", "1.0");
+                });
+            return serviceCollection.AddSingleton<TrackZeroClient>();
         }
     }
 }
