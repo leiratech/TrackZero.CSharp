@@ -15,19 +15,27 @@ namespace TrackZero.DataTransfer
 
         public Event(string emitterType,
                      object emitterId,
-                     string name,
+                     string eventName,
                      object id = default,
                      DateTime? startTime = default,
                      Dictionary<string, object> customAttributes = default,
                      IEnumerable<EntityReference> targets = default,
                      DateTime? endTime = default)
                 : this(new EntityReference(emitterType, emitterId),
-                      name,
+                      eventName,
                       id,
                       startTime,
                       customAttributes,
                       targets,
                       endTime)
+        {
+
+        }
+
+        public Event(string emitterType,
+                     object emitterId,
+                     string name)
+            : this(emitterType, emitterId, name, default, DateTime.UtcNow, null, null, null)
         {
 
         }
@@ -74,7 +82,7 @@ namespace TrackZero.DataTransfer
 
 
         public EntityReference Emitter { get; set; }
-        public object Id { get; }
+        public object Id { get; set; }
         public string Name { get; set; }
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }

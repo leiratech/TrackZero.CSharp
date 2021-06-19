@@ -28,6 +28,13 @@ namespace TrackZero.DataTransfer
             Validate();
         }
 
+        public Entity(string type, object id)
+        {
+            Type = type;
+            Id = id;
+            Validate();
+        }
+
         public Entity AddEntityReferencedAttribute(string attributeName, string type, object id)
         {
             id.ValidateTypeForPremitiveValue();
