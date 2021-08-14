@@ -19,20 +19,43 @@ namespace TrackZero.Extensions
                                        typeof(bool), typeof(bool?),
                                        typeof(Guid),typeof(Guid?)};
 
-        internal static void ValidateTypeForPremitiveValueOrReferenceType(this object obj)
+        internal static object ValidateTypeForPremitiveValueOrReferenceType(this object obj)
         {
             if (obj != default && !allowedTypes.Contains(obj.GetType()) && !(obj is IEntityReference))
             {
                 throw new InvalidOperationException($"Type {obj.GetType().Name} is not a premitive type. Only premitive types and IEntityReference objects are allowed");
             }
+
+            if (obj is DateTime dt)
+            {
+                obj = new DateTimeOffset(dt).UtcDateTime;
+            }
+            else if (obj is DateTimeOffset dto)
+            {
+                obj = dto.UtcDateTime;
+            }
+
+            return obj;
         }
 
-        internal static void ValidateTypeForPremitiveValue(this object obj)
+        internal static object ValidateTypeForPremitiveValue(this object obj)
         {
             if (obj != default && !allowedTypes.Contains(obj.GetType()))
             {
                 throw new InvalidOperationException($"Type {obj.GetType().Name} is not a premitive type. Only premitive types and IEntityReference objects are allowed");
             }
+
+            if (obj is DateTime dt)
+            {
+                obj = new DateTimeOffset(dt).UtcDateTime;
+            }
+            else if (obj is DateTimeOffset dto)
+            {
+                obj = dto.UtcDateTime;
+            }
+
+            return obj;
+
         }
     }
 }

@@ -41,6 +41,8 @@ namespace TrackZero
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
             try
             {
+                entity.ValidateAndCorrect();
+
                 var response = await httpClient.PostAsync("tracking/entities", new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
@@ -64,6 +66,9 @@ namespace TrackZero
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
             try
             {
+                foreach (var e in entities)
+                    e.ValidateAndCorrect();
+
                 var response = await httpClient.PostAsync("tracking/entities/bulk", new StringContent(JsonConvert.SerializeObject(entities), Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
@@ -92,6 +97,7 @@ namespace TrackZero
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
             try
             {
+                @event.ValidateAndCorrect();
                 var response = await httpClient.PostAsync("tracking/events", new StringContent(JsonConvert.SerializeObject(@event), Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
@@ -115,6 +121,9 @@ namespace TrackZero
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
             try
             {
+                foreach (var e in events)
+                    e.ValidateAndCorrect();
+
                 var response = await httpClient.PostAsync("tracking/events/bulk", new StringContent(JsonConvert.SerializeObject(events), Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {

@@ -42,40 +42,28 @@ namespace TrackZero.DataTransfer
 
         public Event(EntityReference emitter, string name, object id = default, DateTime? startTime = default, Dictionary<string, object> attributes = default, IEnumerable<EntityReference> targets = default, DateTime? endTime = default)
         {
-
             Emitter = emitter;
-
             Id = id ?? Guid.NewGuid();
-
-            
             Name = name;
-
             StartTime = startTime;
             EndTime = endTime;
-
             CustomAttributes = attributes ?? new Dictionary<string, object>();
-
             Targets = targets?.ToList() ?? new List<EntityReference>();
-            Validate();
-
         }
 
         public Event AddEntityReferencedAttribute(string attributeName, string type, object id)
         {
-            id.ValidateTypeForPremitiveValue();
             CustomAttributes.Add(attributeName, new EntityReference(type, id));
             return this;
         }
         public Event AddAttribute(string attributeName, object value)
         {
-            value.ValidateTypeForPremitiveValueOrReferenceType();
             CustomAttributes.Add(attributeName, value);
             return this;
         }
 
         public Event AddTarget(string type, object id)
         {
-            id.ValidateTypeForPremitiveValue();
             Targets.Add(new EntityReference(type, id));
             return this;
         }
@@ -89,36 +77,21 @@ namespace TrackZero.DataTransfer
         public Dictionary<string, object> CustomAttributes { get; }
         public List<EntityReference> Targets { get; }
 
-
-        public void Validate()
+        internal void ValidateAndCorrect()
         {
-            Emitter.Validate();
+            Id = Id.ValidateTypeForPremitiveValue();
+            Emitter.Id = Emitter.Id.ValidateTypeForPremitiveValue();
 
-            Id.ValidateTypeForPremitiveValue();
-            if (Id == default)
+            foreach (var cAttribute in this.CustomAttributes)
             {
-                throw new ArgumentNullException(nameof(Id));
+                CustomAttributes[cAttribute.Key] = cAttribute.Value.ValidateTypeForPremitiveValueOrReferenceType();
             }
 
-            if (string.IsNullOrEmpty(Name) || string.IsNullOrWhiteSpace(Name))
+            foreach(var target in Targets)
             {
-                throw new ArgumentNullException(nameof(Name));
+                target.Id = target.Id.ValidateTypeForPremitiveValue();
             }
 
-            CustomAttributes?.Values.AsParallel().ForAll(o =>
-            {
-                o.ValidateTypeForPremitiveValueOrReferenceType();
-            });
-
-            CustomAttributes?.Keys.AsParallel().ForAll(o =>
-            {
-                if (string.IsNullOrEmpty(o) || string.IsNullOrWhiteSpace(o))
-                {
-                    new ArgumentNullException(nameof(CustomAttributes));
-                }
-            });
-
-            Targets.AsParallel().ForAll(t => t.Validate());
         }
     }
 

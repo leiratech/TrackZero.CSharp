@@ -25,50 +25,40 @@ namespace TrackZero.DataTransfer
             Type = type;
             Id = id;
             CustomAttributes = attributes ?? new Dictionary<string, object>();
-            Validate();
         }
 
         public Entity(string type, object id)
         {
             Type = type;
             Id = id;
-            Validate();
         }
 
         public Entity AddEntityReferencedAttribute(string attributeName, string type, object id)
         {
-            id.ValidateTypeForPremitiveValue();
-            CustomAttributes.Add(attributeName, new EntityReference(type, id));
+            CustomAttributes.Add(attributeName, new EntityReference(type, id.ValidateTypeForPremitiveValue()));
             return this;
         }
 
         public Entity AddAttribute(string attributeName, object value)
         {
-            value.ValidateTypeForPremitiveValueOrReferenceType();
-            CustomAttributes.Add(attributeName, value);
+            CustomAttributes.Add(attributeName, value.ValidateTypeForPremitiveValueOrReferenceType());
             return this;
         }
 
-        public Dictionary<string, object> CustomAttributes { get; }
+        public Dictionary<string, object> CustomAttributes { get; } = new Dictionary<string, object>();
         public string Type { get; set; }
-        public object Id { get; }
+        public object Id { get; private set; }
 
-        public void Validate()
+        internal void ValidateAndCorrect()
         {
-            Id.ValidateTypeForPremitiveValue();
-            if (Id == default)
+            Id = Id.ValidateTypeForPremitiveValue();
+
+            foreach (var cAttribute in this.CustomAttributes)
             {
-                throw new ArgumentNullException(nameof(Id));
+                CustomAttributes[cAttribute.Key] = cAttribute.Value.ValidateTypeForPremitiveValueOrReferenceType();
             }
 
-            if (string.IsNullOrEmpty(Type) || string.IsNullOrWhiteSpace(Type))
-            {
-                throw new ArgumentNullException(nameof(Type));
-            }
 
-            CustomAttributes?.Values.AsParallel().ForAll(o => {
-                o.ValidateTypeForPremitiveValueOrReferenceType();
-            });
         }
     }
 
