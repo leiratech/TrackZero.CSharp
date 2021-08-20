@@ -7,7 +7,7 @@ For more details, please visit [https://TrackZero.io](https://trackzero.io)
 
 ## Installation
 ``` powershell
-Install-Package TrackZero.DotNetCore
+Install-Package Leira.TrackZero.NetCore
 ```
 
 ## Setup (Dependency Injection)
