@@ -98,5 +98,6 @@ await trackZeroClient.DeleteEventAsync("Subscribed", 1).ConfigureAwait(false);
 // Deleting an event
 await trackZeroClient.DeleteEventAsync("Subscribed", 1).ConfigureAwait(false);
 ```
-> :warning: Deleting an Entity **WILL DELETE ALL EVENTS** Emitted by this entity Be very careful here!
+> :warning: Deleting an Entity **WILL DELETE ALL EVENTS** Emitted by this entity. Be very careful here!
+
 > :warning: Deletion is immediate and permanent and cannot be undone
