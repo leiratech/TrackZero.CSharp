@@ -30,6 +30,40 @@ namespace TrackZero
             this.clientFactory = clientFactory;
         }
 
+        /// <summary>
+        /// Deletes an entity and all events it emitted.
+        /// CAUTION : this action cannot be undone.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task DeleteEntityAsync(string type, object id)
+        {
+            HttpClient httpClient = clientFactory.CreateClient("TrackZero");
+            try
+            {
+                var response = await httpClient.DeleteAsync($"tracking/entities/{type}/{id}").ConfigureAwait(false);
+                if (response.IsSuccessStatusCode)
+                {
+                    return;
+                }
+
+                throw new Exception(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            finally
+            {
+                httpClient.Dispose();
+            }
+        }
+
+        public async Task DeleteEntityAsync(EntityReference entityReference)
+        {
+            await DeleteEntityAsync(entityReference.Type, entityReference.Id).ConfigureAwait(false);
+        }
 
         /// <summary>
         /// Adds a new entity if it doesn't exist (based on Id and Type) or updates existing one if it exists.
@@ -49,7 +83,7 @@ namespace TrackZero
                     return entity;
                 }
 
-                throw new Exception("Unknown Error Occured");
+                throw new Exception(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
             }
             catch (Exception ex)
             {
@@ -61,21 +95,52 @@ namespace TrackZero
             }
         }
 
-        public async Task<IEnumerable<Entity>> UpsertEntityAsync(IEnumerable<Entity> entities)
+        //public async Task<IEnumerable<Entity>> UpsertEntityAsync(IEnumerable<Entity> entities)
+        //{
+        //    HttpClient httpClient = clientFactory.CreateClient("TrackZero");
+        //    try
+        //    {
+        //        foreach (var e in entities)
+        //            e.ValidateAndCorrect();
+
+        //        var response = await httpClient.PostAsync("tracking/entities/bulk", new StringContent(JsonConvert.SerializeObject(entities), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+        //        if (response.IsSuccessStatusCode)
+        //        {
+        //            return entities;
+        //        }
+
+        //        throw new Exception("Unknown Error Occured");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw;
+        //    }
+        //    finally
+        //    {
+        //        httpClient.Dispose();
+        //    }
+        //}
+
+
+        /// <summary>
+        /// Deletes an event.
+        /// CAUTION : this action cannot be undone.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task DeleteEventAsync(string type, object id)
         {
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
             try
             {
-                foreach (var e in entities)
-                    e.ValidateAndCorrect();
-
-                var response = await httpClient.PostAsync("tracking/entities/bulk", new StringContent(JsonConvert.SerializeObject(entities), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                var response = await httpClient.DeleteAsync($"tracking/events/{type}/{id}").ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
-                    return entities;
+                    return;
                 }
 
-                throw new Exception("Unknown Error Occured");
+                throw new Exception(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
             }
             catch (Exception ex)
             {
@@ -87,6 +152,10 @@ namespace TrackZero
             }
         }
 
+        public async Task DeleteEventAsync(EntityReference entityReference)
+        {
+            await DeleteEntityAsync(entityReference.Type, entityReference.Id).ConfigureAwait(false);
+        }
         /// <summary>
         /// Adds a new event.
         /// </summary>
@@ -104,7 +173,7 @@ namespace TrackZero
                     return @event;
                 }
 
-                throw new Exception("Unknown Error Occured");
+                throw new Exception(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
             }
             catch (Exception ex)
             {
@@ -116,30 +185,30 @@ namespace TrackZero
             }
         }
 
-        public async Task<IEnumerable<Event>> TrackEventAsync(IEnumerable<Event> events)
-        {
-            HttpClient httpClient = clientFactory.CreateClient("TrackZero");
-            try
-            {
-                foreach (var e in events)
-                    e.ValidateAndCorrect();
+        //public async Task<IEnumerable<Event>> TrackEventAsync(IEnumerable<Event> events)
+        //{
+        //    HttpClient httpClient = clientFactory.CreateClient("TrackZero");
+        //    try
+        //    {
+        //        foreach (var e in events)
+        //            e.ValidateAndCorrect();
 
-                var response = await httpClient.PostAsync("tracking/events/bulk", new StringContent(JsonConvert.SerializeObject(events), Encoding.UTF8, "application/json")).ConfigureAwait(false);
-                if (response.IsSuccessStatusCode)
-                {
-                    return events;
-                }
+        //        var response = await httpClient.PostAsync("tracking/events/bulk", new StringContent(JsonConvert.SerializeObject(events), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+        //        if (response.IsSuccessStatusCode)
+        //        {
+        //            return events;
+        //        }
 
-                throw new Exception("Unknown Error Occured");
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-            finally
-            {
-                httpClient.Dispose();
-            }
-        }
+        //        throw new Exception("Unknown Error Occured");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw;
+        //    }
+        //    finally
+        //    {
+        //        httpClient.Dispose();
+        //    }
+        //}
     }
 }

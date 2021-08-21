@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageId>Leira.TrackZero.NetCore</PackageId>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <Authors>Adel Alzubeir</Authors>
     <Description>TrackZero is a full analytics platform that allows you to track what is happening in your system in real time.</Description>
     <Copyright>2021 LEİRA BİLİŞİM TİCARET LİMİTED ŞİRKETİ</Copyright>
