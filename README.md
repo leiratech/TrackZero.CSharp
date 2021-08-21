@@ -84,3 +84,19 @@ await trackZeroClient.TrackEventAsync(myEvent)
 // For more details on ConfigureAwait, check this great blog post https://devblogs.microsoft.com/dotnet/configureawait-faq/
 .ConfigureAwait(false);
 ```
+
+
+### Deleting Events
+``` c#
+// Deleting an event
+await trackZeroClient.DeleteEventAsync("Subscribed", 1).ConfigureAwait(false);
+```
+> :warning: Deletion is immediate and permanent and cannot be undone
+
+### Deleting Entities
+``` c#
+// Deleting an event
+await trackZeroClient.DeleteEventAsync("Subscribed", 1).ConfigureAwait(false);
+```
+> :warning: Deleting an Entity **WILL DELETE ALL EVENTS** Emitted by this entity Be very careful here!
+> :warning: Deletion is immediate and permanent and cannot be undone

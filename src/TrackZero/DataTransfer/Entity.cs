@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -20,11 +21,11 @@ namespace TrackZero.DataTransfer
         /// <exception cref="ArgumentNullException">Thrown when id is null</exception>
         /// <exception cref="InvalidOperationException">Thrown when id or any customAttribute are not premitive type.</exception>
         /// <returns>Returns the entity you created or throws exception on error</returns>
-        public Entity(string type, object id, Dictionary<string, object> attributes = default)
+        public Entity(string type, object id, ConcurrentDictionary<string, object> attributes = default)
         {
             Type = type;
             Id = id;
-            CustomAttributes = attributes ?? new Dictionary<string, object>();
+            CustomAttributes = attributes ?? new ConcurrentDictionary<string, object>();
         }
 
         public Entity(string type, object id)
@@ -35,17 +36,17 @@ namespace TrackZero.DataTransfer
 
         public Entity AddEntityReferencedAttribute(string attributeName, string type, object id)
         {
-            CustomAttributes.Add(attributeName, new EntityReference(type, id.ValidateTypeForPremitiveValue()));
+            CustomAttributes.TryAdd(attributeName, new EntityReference(type, id.ValidateTypeForPremitiveValue()));
             return this;
         }
 
         public Entity AddAttribute(string attributeName, object value)
         {
-            CustomAttributes.Add(attributeName, value.ValidateTypeForPremitiveValueOrReferenceType());
+            CustomAttributes.TryAdd(attributeName, value.ValidateTypeForPremitiveValueOrReferenceType());
             return this;
         }
 
-        public Dictionary<string, object> CustomAttributes { get; } = new Dictionary<string, object>();
+        public ConcurrentDictionary<string, object> CustomAttributes { get; } = new ConcurrentDictionary<string, object>();
         public string Type { get; set; }
         public object Id { get; private set; }
 

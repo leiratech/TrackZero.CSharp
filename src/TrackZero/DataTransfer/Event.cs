@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using TrackZero.Abstract;
@@ -18,7 +19,7 @@ namespace TrackZero.DataTransfer
                      string eventName,
                      object id = default,
                      DateTime? startTime = default,
-                     Dictionary<string, object> customAttributes = default,
+                     ConcurrentDictionary<string, object> customAttributes = default,
                      IEnumerable<EntityReference> targets = default,
                      DateTime? endTime = default)
                 : this(new EntityReference(emitterType, emitterId),
@@ -40,25 +41,25 @@ namespace TrackZero.DataTransfer
 
         }
 
-        public Event(EntityReference emitter, string name, object id = default, DateTime? startTime = default, Dictionary<string, object> attributes = default, IEnumerable<EntityReference> targets = default, DateTime? endTime = default)
+        public Event(EntityReference emitter, string name, object id = default, DateTime? startTime = default, ConcurrentDictionary<string, object> attributes = default, IEnumerable<EntityReference> targets = default, DateTime? endTime = default)
         {
             Emitter = emitter;
             Id = id ?? Guid.NewGuid();
             Name = name;
             StartTime = startTime;
             EndTime = endTime;
-            CustomAttributes = attributes ?? new Dictionary<string, object>();
+            CustomAttributes = attributes ?? new ConcurrentDictionary<string, object>();
             Targets = targets?.ToList() ?? new List<EntityReference>();
         }
 
         public Event AddEntityReferencedAttribute(string attributeName, string type, object id)
         {
-            CustomAttributes.Add(attributeName, new EntityReference(type, id));
+            CustomAttributes.TryAdd(attributeName, new EntityReference(type, id));
             return this;
         }
         public Event AddAttribute(string attributeName, object value)
         {
-            CustomAttributes.Add(attributeName, value);
+            CustomAttributes.TryAdd(attributeName, value);
             return this;
         }
 
@@ -74,7 +75,7 @@ namespace TrackZero.DataTransfer
         public string Name { get; set; }
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
-        public Dictionary<string, object> CustomAttributes { get; }
+        public ConcurrentDictionary<string, object> CustomAttributes { get; }
         public List<EntityReference> Targets { get; }
 
         internal void ValidateAndCorrect()

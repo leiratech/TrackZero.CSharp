@@ -42,7 +42,15 @@ namespace TrackZero
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
             try
             {
-                var response = await httpClient.DeleteAsync($"tracking/entities/{type}/{id}").ConfigureAwait(false);
+                
+                var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Delete,
+                    RequestUri = new Uri("/tracking/entities", UriKind.Relative),
+                    Content = new StringContent(JsonConvert.SerializeObject(new EntityReference(type, id)), Encoding.UTF8, "application/json"),
+                    
+                };
+                var response = await httpClient.SendAsync(request).ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
                     return;
@@ -76,8 +84,7 @@ namespace TrackZero
             try
             {
                 entity.ValidateAndCorrect();
-
-                var response = await httpClient.PostAsync("tracking/entities", new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                var response = await httpClient.PostAsync("/tracking/entities", new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
                     return entity;
@@ -134,7 +141,14 @@ namespace TrackZero
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
             try
             {
-                var response = await httpClient.DeleteAsync($"tracking/events/{type}/{id}").ConfigureAwait(false);
+
+                var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Delete,
+                    RequestUri = new Uri("tracking/events", UriKind.Relative),
+                    Content = new StringContent(JsonConvert.SerializeObject(new EntityReference(type, id)), Encoding.UTF8, "application/json")
+                };
+                var response = await httpClient.SendAsync(request).ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
                     return;
