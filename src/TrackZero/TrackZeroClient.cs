@@ -102,31 +102,31 @@ namespace TrackZero
             }
         }
 
-        //public async Task<IEnumerable<Entity>> UpsertEntityAsync(IEnumerable<Entity> entities)
-        //{
-        //    HttpClient httpClient = clientFactory.CreateClient("TrackZero");
-        //    try
-        //    {
-        //        foreach (var e in entities)
-        //            e.ValidateAndCorrect();
+        public async Task<IEnumerable<Entity>> UpsertEntityAsync(IEnumerable<Entity> entities)
+        {
+            HttpClient httpClient = clientFactory.CreateClient("TrackZero");
+            try
+            {
+                foreach (var e in entities)
+                    e.ValidateAndCorrect();
 
-        //        var response = await httpClient.PostAsync("tracking/entities/bulk", new StringContent(JsonConvert.SerializeObject(entities), Encoding.UTF8, "application/json")).ConfigureAwait(false);
-        //        if (response.IsSuccessStatusCode)
-        //        {
-        //            return entities;
-        //        }
+                var response = await httpClient.PostAsync("tracking/entities/bulk", new StringContent(JsonConvert.SerializeObject(entities), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                if (response.IsSuccessStatusCode)
+                {
+                    return entities;
+                }
 
-        //        throw new Exception("Unknown Error Occured");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw;
-        //    }
-        //    finally
-        //    {
-        //        httpClient.Dispose();
-        //    }
-        //}
+                throw new Exception("Unknown Error Occured");
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            finally
+            {
+                httpClient.Dispose();
+            }
+        }
 
 
         /// <summary>
@@ -199,30 +199,30 @@ namespace TrackZero
             }
         }
 
-        //public async Task<IEnumerable<Event>> TrackEventAsync(IEnumerable<Event> events)
-        //{
-        //    HttpClient httpClient = clientFactory.CreateClient("TrackZero");
-        //    try
-        //    {
-        //        foreach (var e in events)
-        //            e.ValidateAndCorrect();
+        public async Task<IEnumerable<Event>> TrackEventAsync(IEnumerable<Event> events)
+        {
+            HttpClient httpClient = clientFactory.CreateClient("TrackZero");
+            try
+            {
+                foreach (var e in events)
+                    e.ValidateAndCorrect();
 
-        //        var response = await httpClient.PostAsync("tracking/events/bulk", new StringContent(JsonConvert.SerializeObject(events), Encoding.UTF8, "application/json")).ConfigureAwait(false);
-        //        if (response.IsSuccessStatusCode)
-        //        {
-        //            return events;
-        //        }
+                var response = await httpClient.PostAsync("tracking/events/bulk", new StringContent(JsonConvert.SerializeObject(events), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                if (response.IsSuccessStatusCode)
+                {
+                    return events;
+                }
 
-        //        throw new Exception("Unknown Error Occured");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw;
-        //    }
-        //    finally
-        //    {
-        //        httpClient.Dispose();
-        //    }
-        //}
+                throw new Exception("Unknown Error Occured");
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            finally
+            {
+                httpClient.Dispose();
+            }
+        }
     }
 }
