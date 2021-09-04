@@ -3,7 +3,10 @@
 
 # TrackZero
 Powerful, insightful and real-time analytics that helps you take your products and apps to the next level.
-For more details, please visit [https://TrackZero.io](https://trackzero.io)
+
+For full documentation on this SDK, please check [the documentation](https://docs.trackzero.io/using-sdks/netcore).
+
+For more details on TrackZero, please visit [TrackZero website](https://trackzero.io).
 
 ## Installation
 ``` powershell
