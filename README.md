@@ -79,7 +79,7 @@ Event myEvent = new Event("User", 1, "Subscribed")
 .AddEntityReferencedAttribute("User Source", "Marketing Campaign", "Appstore Direct Marketing");
 
 // Send the Event to TrackZero
-await trackZeroClient.TrackEventAsync(myEvent)
+await trackZeroClient.UpsertEventAsync(myEvent)
 // If the context/scheduler do not matter to your application flow, use ConfigureAwait(false) as it aids performance.
 // For more details on ConfigureAwait, check this great blog post https://devblogs.microsoft.com/dotnet/configureawait-faq/
 .ConfigureAwait(false);
