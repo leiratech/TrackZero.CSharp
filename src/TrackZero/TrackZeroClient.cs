@@ -135,7 +135,6 @@ namespace TrackZero
             }
         }
 
-
         public async Task<TrackZeroOperationResult<IEnumerable<Entity>>> UpsertEntityAsync(IEnumerable<Entity> entities)
         {
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
@@ -168,7 +167,6 @@ namespace TrackZero
                 httpClient.Dispose();
             }
         }
-
 
         /// <summary>
         /// Deletes an event.
@@ -262,14 +260,6 @@ namespace TrackZero
             }
         }
 
-        [Obsolete]
-        public async Task<TrackZeroOperationResult<Event>> TrackEventAsync(Event @event)
-        {
-            logger?.LogWarning("You are using TrackEventAsync which is obselete, please use UpsertEventAsync instead.");
-            return await UpsertEventAsync(@event).ConfigureAwait(false);
-        }
-
-
         public async Task<TrackZeroOperationResult<IEnumerable<Event>>> UpsertEventAsync(IEnumerable<Event> events)
         {
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
@@ -302,6 +292,50 @@ namespace TrackZero
             {
                 httpClient.Dispose();
             }
+        }
+
+        public async Task<TrackZeroOperationResult<Dictionary<string, object>>> GetApplicableConfigurationAsync(Guid configurationGroupId, object identifier)
+        {
+            HttpClient httpClient = clientFactory.CreateClient("TrackZero");
+            try
+            {
+
+                var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri($"dynamicconfiguration/applicable?configurationGroupId={configurationGroupId}", UriKind.Relative),
+                    Content = new StringContent(JsonConvert.SerializeObject(new Dictionary<string, object>() { { "identifier", identifier } }), Encoding.UTF8, "application/json")
+                };
+
+                var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+                if (response.IsSuccessStatusCode)
+                {
+                    logger?.LogInformation("SmartConfiguration Recieved");
+                    return new TrackZeroOperationResult<Dictionary<string,object>>(JsonConvert.DeserializeObject<Dictionary<string, object>>(await response.Content.ReadAsStringAsync().ConfigureAwait(false)));
+                }
+
+                logger?.LogError("Get Smart Configuration for Group Id = {configurationGroupId}, id = {identifier} failed with status code {code}.", configurationGroupId, identifier, response.StatusCode);
+                return TrackZeroOperationResult<Dictionary<string, object>>.GenericFailure;
+            }
+            catch (Exception ex)
+            {
+                logger?.LogCritical("Get Smart Configuration for Group Id = {configurationGroupId}, id = {identifier} encounterd fatal error.", configurationGroupId, identifier);
+                if (throwExceptions)
+                    throw;
+
+                return new TrackZeroOperationResult<Dictionary<string, object>>(ex);
+            }
+            finally
+            {
+                httpClient.Dispose();
+            }
+        }
+
+        [Obsolete]
+        public async Task<TrackZeroOperationResult<Event>> TrackEventAsync(Event @event)
+        {
+            logger?.LogWarning("You are using TrackEventAsync which is obselete, please use UpsertEventAsync instead.");
+            return await UpsertEventAsync(@event).ConfigureAwait(false);
         }
 
         [Obsolete]
