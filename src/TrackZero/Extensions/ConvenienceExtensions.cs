@@ -4,16 +4,23 @@ using TrackZero.DataTransfer;
 
 namespace TrackZero
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class ConvenienceExtensions
     {
-        public static async Task<TrackZeroOperationResult<Entity>> TrackUsingAsync(this Entity entity, TrackZeroClient trackZeroClient)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="analyticsSpaceId"></param>
+        /// <param name="trackZeroClient"></param>
+        /// <returns></returns>
+        public static async Task<TrackZeroOperationResult<Entity>> TrackUsingAsync(this Entity entity, string analyticsSpaceId, TrackZeroClient trackZeroClient)
         {
-            return await trackZeroClient.UpsertEntityAsync(entity).ConfigureAwait(false);
+            return await trackZeroClient.UpsertEntityAsync(entity, analyticsSpaceId).ConfigureAwait(false);
         }
 
-        public static async Task<TrackZeroOperationResult<Event>> TrackUsingAsync(this Event @event, TrackZeroClient trackZeroClient)
-        {
-            return await trackZeroClient.UpsertEventAsync(@event).ConfigureAwait(false);
-        }
+
     }
 }

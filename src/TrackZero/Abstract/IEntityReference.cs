@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text;
-
-namespace TrackZero.Abstract
+﻿namespace TrackZero.Abstract
 {
     internal interface IEntityReference
     {

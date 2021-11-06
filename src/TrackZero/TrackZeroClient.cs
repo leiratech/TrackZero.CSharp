@@ -3,15 +3,11 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Security.Authentication;
 using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using TrackZero.Abstract;
 using TrackZero.DataTransfer;
 
@@ -22,16 +18,19 @@ namespace TrackZero
     /// </summary>
     public sealed class TrackZeroClient
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        public static TrackZeroClient Instance { get; internal set; }
         private readonly IHttpClientFactory clientFactory;
         private readonly ILogger logger;
         private readonly bool throwExceptions;
 
-        private const int BulkPageSize = 250;
         /// <summary>
         /// Creates a new Instance of TrackZeroClient
         /// </summary>
+        /// <param name="serviceProvider"></param>
         /// <param name="clientFactory"></param>
-        /// <param name="logger"></param>
         /// <param name="throwExceptions"></param>
         public TrackZeroClient(IServiceProvider serviceProvider, IHttpClientFactory clientFactory, bool throwExceptions)
         {
@@ -39,6 +38,7 @@ namespace TrackZero
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             this.logger = loggerFactory?.CreateLogger<TrackZeroClient>();
             this.throwExceptions = throwExceptions;
+            Instance = this;
         }
 
         /// <summary>
@@ -47,9 +47,19 @@ namespace TrackZero
         /// </summary>
         /// <param name="type">The type of the entity to delete.</param>
         /// <param name="id">The id of the entity to delete.</param>
+        /// <param name="analyticsSpaceId">The analytics space id that hosts this entity.</param>
         /// <returns></returns>
-        public async Task<TrackZeroOperationResult<EntityReference>> DeleteEntityAsync(string type, object id)
+        public async Task<TrackZeroOperationResult<EntityReference>> DeleteEntityAsync(string type, object id, string analyticsSpaceId)
         {
+            if (string.IsNullOrEmpty(analyticsSpaceId))
+            {
+                var ex = new ArgumentException($"'{nameof(analyticsSpaceId)}' cannot be null or empty.", nameof(analyticsSpaceId));
+                if (throwExceptions)
+                    throw ex;
+
+                return new TrackZeroOperationResult<EntityReference>(ex);
+            }
+
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
             try
             {
@@ -57,7 +67,7 @@ namespace TrackZero
                 var request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Delete,
-                    RequestUri = new Uri("/tracking/entities", UriKind.Relative),
+                    RequestUri = new Uri($"/tracking/entities?analyticsSpaceId={HttpUtility.UrlEncode(analyticsSpaceId)}", UriKind.Relative),
                     Content = new StringContent(JsonConvert.SerializeObject(new EntityReference(type, id)), Encoding.UTF8, "application/json"),
 
                 };
@@ -88,29 +98,40 @@ namespace TrackZero
         }
 
         /// <summary>
-        /// Deletes an entity and all events it emitted.
+        /// Deletes an entity
         /// CAUTION : this action cannot be undone.
         /// </summary>
         /// <param name="entityReference">The entity reference to delete.</param>
+        /// <param name="analyticsSpaceId">The analytics space id that hosts this entity.</param>
         /// <returns></returns>
-        public async Task<TrackZeroOperationResult<EntityReference>> DeleteEntityAsync(EntityReference entityReference)
+        public async Task<TrackZeroOperationResult<EntityReference>> DeleteEntityAsync(EntityReference entityReference, string analyticsSpaceId)
         {
-            return await DeleteEntityAsync(entityReference.Type, entityReference.Id).ConfigureAwait(false);
+            return await DeleteEntityAsync(entityReference.Type, entityReference.Id, analyticsSpaceId).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Adds a new entity if it doesn't exist (based on Id and Type) or updates existing one if it exists.
         /// </summary>
         /// <param name="entity">Entity to create. Any EntityReference in CustomAttributes will automatically be created if do not exist.</param>
+        /// <param name="analyticsSpaceId">The analytics space id that will hosts this entity.</param>
         /// <returns></returns>
-        public async Task<TrackZeroOperationResult<Entity>> UpsertEntityAsync(Entity entity)
+        public async Task<TrackZeroOperationResult<Entity>> UpsertEntityAsync(Entity entity, string analyticsSpaceId)
         {
+            if (string.IsNullOrEmpty(analyticsSpaceId))
+            {
+                var ex = new ArgumentException($"'{nameof(analyticsSpaceId)}' cannot be null or empty.", nameof(analyticsSpaceId));
+                if (throwExceptions)
+                    throw ex;
+
+                return new TrackZeroOperationResult<Entity>(ex);
+            }
+
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
             try
             {
                 entity.ValidateAndCorrect();
 
-                var response = await httpClient.PostAsync("/tracking/entities", new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                var response = await httpClient.PostAsync($"/tracking/entities?analyticsSpaceId={HttpUtility.UrlEncode(analyticsSpaceId)}", new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
                     logger?.LogInformation("Upsert Entity Type = {type}, id = {id} successful.", entity.Type, entity.Id);
@@ -118,6 +139,7 @@ namespace TrackZero
                 }
 
                 logger?.LogError("Upsert Entity Type = {type}, id = {id} failed with status code {code}.", entity.Type, entity.Id, response.StatusCode);
+                logger?.LogError(await response.Content.ReadAsStringAsync());
                 return TrackZeroOperationResult<Entity>.GenericFailure;
             }
             catch (Exception ex)
@@ -135,15 +157,31 @@ namespace TrackZero
             }
         }
 
-        public async Task<TrackZeroOperationResult<IEnumerable<Entity>>> UpsertEntityAsync(IEnumerable<Entity> entities)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entities"></param>
+        /// <param name="analyticsSpaceId">The analytics space id that will hosts this entity.</param>
+        /// <returns></returns>
+        public async Task<TrackZeroOperationResult<IEnumerable<Entity>>> UpsertEntityAsync(IEnumerable<Entity> entities, string analyticsSpaceId)
         {
+            if (string.IsNullOrEmpty(analyticsSpaceId))
+            {
+                var ex = new ArgumentException($"'{nameof(analyticsSpaceId)}' cannot be null or empty.", nameof(analyticsSpaceId));
+                if (throwExceptions)
+                    throw ex;
+
+                return new TrackZeroOperationResult<IEnumerable<Entity>>(ex);
+            }
+
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
             try
             {
                 foreach (var e in entities)
                     e.ValidateAndCorrect();
 
-                var response = await httpClient.PostAsync("tracking/entities/bulk", new StringContent(JsonConvert.SerializeObject(entities), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+
+                var response = await httpClient.PostAsync($"tracking/entities/bulk?analyticsSpaceId={HttpUtility.UrlEncode(analyticsSpaceId)}", new StringContent(JsonConvert.SerializeObject(entities), Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
                     logger?.LogInformation("Bulk Upsert of {count} Entities successfull.", entities.Count());
@@ -169,43 +207,43 @@ namespace TrackZero
         }
 
         /// <summary>
-        /// Deletes an event.
-        /// CAUTION : this action cannot be undone.
+        /// 
         /// </summary>
-        /// <param name="type">The type of the event to delete.</param>
-        /// <param name="id">The id of the event to delete.</param>
+        /// <param name="analyticsSpaceId"></param>
         /// <returns></returns>
-        public async Task<TrackZeroOperationResult<EntityReference>> DeleteEventAsync(string type, object id)
+        public async Task<TrackZeroOperationResult> CreateAnalyticsSpaceAsync(string analyticsSpaceId)
         {
+            if (string.IsNullOrEmpty(analyticsSpaceId))
+            {
+                var ex = new ArgumentException($"'{nameof(analyticsSpaceId)}' cannot be null or empty.", nameof(analyticsSpaceId));
+                if (throwExceptions)
+                    throw ex;
+
+                return new TrackZeroOperationResult(ex);
+            }
+
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
             try
             {
-
-                var request = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Delete,
-                    RequestUri = new Uri("tracking/events", UriKind.Relative),
-                    Content = new StringContent(JsonConvert.SerializeObject(new EntityReference(type, id)), Encoding.UTF8, "application/json")
-                };
-
-                var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+                var response = await httpClient.PostAsync($"/AnalyticsSpaces?analyticsSpaceId={HttpUtility.UrlEncode(analyticsSpaceId)}", null).ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
-                    logger?.LogInformation("Deleting Event Type = {type}, id = {id} successful.", type, id);
-                    return new TrackZeroOperationResult<EntityReference>(new EntityReference(type, id));
+                    return new TrackZeroOperationResult(true, null);
                 }
 
-                logger?.LogError("Deleting Event Type = {type}, id = {id} failed with status code {code}.", type, id, response.StatusCode);
-                return TrackZeroOperationResult<EntityReference>.GenericFailure;
+                logger?.LogError("Unable to get session for analyticsSpaceId = {analyticsSpaceId}. Status Code = {StatusCode}", analyticsSpaceId, response.StatusCode);
+                logger?.LogError(await response.Content.ReadAsStringAsync());
+                return TrackZeroOperationResult.GenericFailure;
             }
             catch (Exception ex)
             {
-                logger?.LogCritical(ex, "Deleting Event Type = {type}, id = {id} threw an exception.", type, id);
+                logger?.LogCritical(ex, "CreateAnalyticsSpaceSession threw an exception.");
 
                 if (throwExceptions)
                     throw;
 
-                return new TrackZeroOperationResult<EntityReference>(ex);
+                return new TrackZeroOperationResult(ex);
+                //return new TrackZeroOperationResult<Entity>(ex);
             }
             finally
             {
@@ -214,135 +252,102 @@ namespace TrackZero
         }
 
         /// <summary>
-        /// Deletes an event.
-        /// CAUTION : this action cannot be undone.
+        /// 
         /// </summary>
-        /// <param name="entityReference">The event reference to delete.</param>
+        /// <param name="analyticsSpaceId"></param>
         /// <returns></returns>
-        public async Task<TrackZeroOperationResult<EntityReference>> DeleteEventAsync(EntityReference entityReference)
+        public async Task<TrackZeroOperationResult> DeleteAnalyticsSpaceAsync(string analyticsSpaceId)
         {
-            return await DeleteEntityAsync(entityReference.Type, entityReference.Id).ConfigureAwait(false);
+            if (string.IsNullOrEmpty(analyticsSpaceId))
+            {
+                var ex = new ArgumentException($"'{nameof(analyticsSpaceId)}' cannot be null or empty.", nameof(analyticsSpaceId));
+                if (throwExceptions)
+                    throw ex;
+
+                return new TrackZeroOperationResult(ex);
+            }
+
+            HttpClient httpClient = clientFactory.CreateClient("TrackZero");
+            try
+            {
+                var response = await httpClient.DeleteAsync($"/AnalyticsSpaces?analyticsSpaceId={HttpUtility.UrlEncode(analyticsSpaceId)}").ConfigureAwait(false);
+                if (response.IsSuccessStatusCode)
+                {
+                    return new TrackZeroOperationResult(true, null);
+                }
+
+                logger?.LogError("Unable to get session for analyticsSpaceId = {analyticsSpaceId}. Status Code = {StatusCode}", analyticsSpaceId, response.StatusCode);
+                logger?.LogError(await response.Content.ReadAsStringAsync());
+                return TrackZeroOperationResult.GenericFailure;
+            }
+            catch (Exception ex)
+            {
+                logger?.LogCritical(ex, "CreateAnalyticsSpaceSession threw an exception.");
+
+                if (throwExceptions)
+                    throw;
+
+                return new TrackZeroOperationResult(ex);
+                //return new TrackZeroOperationResult<Entity>(ex);
+            }
+            finally
+            {
+                httpClient.Dispose();
+            }
         }
 
         /// <summary>
-        /// Adds a new event.
+        /// Creates a customer portal session.
         /// </summary>
-        /// <param name="event">Event to create. Any EntityReference in CustomAttributes, Emitter and Targets will automatically be created if do not exist.</param>
+        /// <param name="analyticsSpaceId"></param>
+        /// <param name="sessionDuration"></param>
         /// <returns></returns>
-        public async Task<TrackZeroOperationResult<Event>> UpsertEventAsync(Event @event)
+        public async Task<TrackZeroOperationResult<AnalyticsSpacePortalSession>> CreateAnalyticsSpacePortalSessionAsync(string analyticsSpaceId, TimeSpan sessionDuration)
         {
+            if (string.IsNullOrEmpty(analyticsSpaceId))
+            {
+                var ex = new ArgumentException($"'{nameof(analyticsSpaceId)}' cannot be null or empty.", nameof(analyticsSpaceId));
+                if (throwExceptions)
+                    throw ex;
+                return new TrackZeroOperationResult<AnalyticsSpacePortalSession>(ex);
+            }
+
+            if (sessionDuration.TotalSeconds < 300 || sessionDuration.TotalSeconds > 3600)
+            {
+                var ex = new ArgumentOutOfRangeException(nameof(sessionDuration), "sessionDuration must be between 5 and 60 minutes");
+                if (throwExceptions)
+                    throw ex;
+                return new TrackZeroOperationResult<AnalyticsSpacePortalSession>(ex);
+            }
+
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
             try
             {
-                @event.ValidateAndCorrect();
-                var response = await httpClient.PostAsync("tracking/events", new StringContent(JsonConvert.SerializeObject(@event), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                var response = await httpClient.GetAsync($"/analyticsSpaces/session?analyticsSpaceId={HttpUtility.UrlEncode(analyticsSpaceId)}&ttl={sessionDuration.TotalSeconds}").ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
-                    logger?.LogInformation("Upsert Event Name = {type}, id = {id} successful.", @event.Name, @event.Id);
-                    return new TrackZeroOperationResult<Event>(@event);
+
+                    return new TrackZeroOperationResult<AnalyticsSpacePortalSession>(JsonConvert.DeserializeObject<AnalyticsSpacePortalSession>(await response.Content.ReadAsStringAsync().ConfigureAwait(false)));
                 }
 
-                logger?.LogError("Upsert Event Name = {type}, id = {id} failed with status code {code}.", @event.Name, @event.Id, response.StatusCode);
-                return TrackZeroOperationResult<Event>.GenericFailure;
+                logger?.LogError("Unable to get session for analyticsSpaceId = {analyticsSpaceId}. Status Code = {StatusCode}", analyticsSpaceId, response.StatusCode);
+                logger?.LogError(await response.Content.ReadAsStringAsync());
+                return TrackZeroOperationResult<AnalyticsSpacePortalSession>.GenericFailure;
             }
             catch (Exception ex)
             {
-                logger?.LogCritical(ex, "Upsert Event Name = {type}, id = {id} threw an exception.", @event.Name, @event.Id);
+                logger?.LogCritical(ex, "CreateAnalyticsSpaceSession threw an exception.");
 
                 if (throwExceptions)
                     throw;
 
-                return new TrackZeroOperationResult<Event>(ex);
+                return new TrackZeroOperationResult<AnalyticsSpacePortalSession>(ex);
+                //return new TrackZeroOperationResult<Entity>(ex);
             }
             finally
             {
                 httpClient.Dispose();
             }
-        }
-
-        public async Task<TrackZeroOperationResult<IEnumerable<Event>>> UpsertEventAsync(IEnumerable<Event> events)
-        {
-            HttpClient httpClient = clientFactory.CreateClient("TrackZero");
-            try
-            {
-                foreach (var e in events)
-                    e.ValidateAndCorrect();
-
-                var response = await httpClient.PostAsync("tracking/events/bulk", new StringContent(JsonConvert.SerializeObject(events), Encoding.UTF8, "application/json")).ConfigureAwait(false);
-                if (response.IsSuccessStatusCode)
-                {
-                    logger?.LogInformation("Bulk Upsert of {count} Events successfull.", events.Count());
-                    return new TrackZeroOperationResult<IEnumerable<Event>>(events);
-                }
-
-                logger?.LogError("Bulk Upsert of {count} Events failed with status code {code}.", events.Count(), response.StatusCode);
-                return TrackZeroOperationResult<IEnumerable<Event>>.GenericFailure;
-            }
-            catch (Exception ex)
-            {
-                logger?.LogCritical(ex, "Bulk Upsert of {count} Entities threw an exception.", events.Count());
-
-                if (throwExceptions)
-                    throw;
-
-                return new TrackZeroOperationResult<IEnumerable<Event>>(ex);
-
-            }
-            finally
-            {
-                httpClient.Dispose();
-            }
-        }
-
-        public async Task<TrackZeroOperationResult<Dictionary<string, object>>> GetApplicableConfigurationAsync(Guid configurationGroupId, object identifier)
-        {
-            HttpClient httpClient = clientFactory.CreateClient("TrackZero");
-            try
-            {
-
-                var request = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Post,
-                    RequestUri = new Uri($"dynamicconfiguration/applicable?configurationGroupId={configurationGroupId}", UriKind.Relative),
-                    Content = new StringContent(JsonConvert.SerializeObject(new Dictionary<string, object>() { { "identifier", identifier } }), Encoding.UTF8, "application/json")
-                };
-
-                var response = await httpClient.SendAsync(request).ConfigureAwait(false);
-                if (response.IsSuccessStatusCode)
-                {
-                    logger?.LogInformation("SmartConfiguration Recieved");
-                    return new TrackZeroOperationResult<Dictionary<string,object>>(JsonConvert.DeserializeObject<Dictionary<string, object>>(await response.Content.ReadAsStringAsync().ConfigureAwait(false)));
-                }
-
-                logger?.LogError("Get Smart Configuration for Group Id = {configurationGroupId}, id = {identifier} failed with status code {code}.", configurationGroupId, identifier, response.StatusCode);
-                return TrackZeroOperationResult<Dictionary<string, object>>.GenericFailure;
-            }
-            catch (Exception ex)
-            {
-                logger?.LogCritical("Get Smart Configuration for Group Id = {configurationGroupId}, id = {identifier} encounterd fatal error.", configurationGroupId, identifier);
-                if (throwExceptions)
-                    throw;
-
-                return new TrackZeroOperationResult<Dictionary<string, object>>(ex);
-            }
-            finally
-            {
-                httpClient.Dispose();
-            }
-        }
-
-        [Obsolete]
-        public async Task<TrackZeroOperationResult<Event>> TrackEventAsync(Event @event)
-        {
-            logger?.LogWarning("You are using TrackEventAsync which is obselete, please use UpsertEventAsync instead.");
-            return await UpsertEventAsync(@event).ConfigureAwait(false);
-        }
-
-        [Obsolete]
-        public async Task<TrackZeroOperationResult<IEnumerable<Event>>> TrackEventAsync(IEnumerable<Event> events)
-        {
-            logger?.LogWarning("You are using TrackEventAsync which is obselete, please use UpsertEventAsync instead.");
-            return await UpsertEventAsync(events).ConfigureAwait(false);
         }
     }
 }

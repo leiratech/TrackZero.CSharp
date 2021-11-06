@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using TrackZero.Abstract;
 
 namespace TrackZero.Extensions
@@ -13,7 +11,7 @@ namespace TrackZero.Extensions
                                        typeof(double), typeof(double?),
                                        typeof(float), typeof(float?),
                                        typeof(decimal), typeof(decimal?),
-                                       typeof(string), 
+                                       typeof(string),
                                        typeof(DateTime), typeof(DateTime?),
                                        typeof(DateTimeOffset), typeof(DateTimeOffset?),
                                        typeof(bool), typeof(bool?),

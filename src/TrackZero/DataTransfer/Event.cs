@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TrackZero.Abstract;
 using TrackZero.Extensions;
 
 namespace TrackZero.DataTransfer
@@ -87,7 +86,7 @@ namespace TrackZero.DataTransfer
                 CustomAttributes[cAttribute.Key] = cAttribute.Value.ValidateTypeForPremitiveValueOrReferenceType();
             }
 
-            foreach(var target in Targets)
+            foreach (var target in Targets)
             {
                 target.Id = target.Id.ValidateTypeForPremitiveValue();
             }
