@@ -163,7 +163,7 @@ namespace TrackZero
         /// <param name="entities"></param>
         /// <param name="analyticsSpaceId">The analytics space id that will hosts this entity.</param>
         /// <returns></returns>
-        public async Task<TrackZeroOperationResult<IEnumerable<Entity>>> UpsertEntityAsync(IEnumerable<Entity> entities, string analyticsSpaceId)
+        public async Task<TrackZeroOperationResult<Dictionary<QueueEntityError, int>>> UpsertEntityAsync(IEnumerable<Entity> entities, string analyticsSpaceId)
         {
             if (string.IsNullOrEmpty(analyticsSpaceId))
             {
@@ -171,7 +171,16 @@ namespace TrackZero
                 if (throwExceptions)
                     throw ex;
 
-                return new TrackZeroOperationResult<IEnumerable<Entity>>(ex);
+                return new TrackZeroOperationResult<Dictionary<QueueEntityError, int>> (ex);
+            }
+
+            if (entities.Count() > 200)
+            {
+                var ex = new ArgumentException($"'{nameof(entities)}' cannot contain more than 200 items.", nameof(entities));
+                if (throwExceptions)
+                    throw ex;
+
+                return new TrackZeroOperationResult<Dictionary<QueueEntityError, int>>(ex);
             }
 
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
@@ -180,16 +189,29 @@ namespace TrackZero
                 foreach (var e in entities)
                     e.ValidateAndCorrect();
 
+                httpClient.Timeout = TimeSpan.FromMinutes(10);
 
                 var response = await httpClient.PostAsync($"tracking/entities/bulk?analyticsSpaceId={HttpUtility.UrlEncode(analyticsSpaceId)}", new StringContent(JsonConvert.SerializeObject(entities), Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
+                    logger?.LogInformation("-----------------------------------------------------------------------");
+                    logger?.LogInformation(await response.Content.ReadAsStringAsync());
+                    logger?.LogInformation("-----------------------------------------------------------------------");
                     logger?.LogInformation("Bulk Upsert of {count} Entities successfull.", entities.Count());
-                    return new TrackZeroOperationResult<IEnumerable<Entity>>(entities);
-                }
+                    var resultGroups = Newtonsoft.Json.JsonConvert.DeserializeObject<List<QueueEntityError>>(await response.Content.ReadAsStringAsync().ConfigureAwait(false)).GroupBy(t => t);
 
+                    Dictionary<QueueEntityError, int> parsedResponse = new Dictionary<QueueEntityError, int>();
+                    foreach (var group in resultGroups)
+                    {
+                        parsedResponse.Add(group.Key, group.Count());
+                    }
+                    return new TrackZeroOperationResult<Dictionary<QueueEntityError, int>> (parsedResponse);
+                }
+                logger?.LogInformation("-----------------------------------------------------------------------");
+                logger?.LogInformation(await response.Content.ReadAsStringAsync());
+                logger?.LogInformation("-----------------------------------------------------------------------");
                 logger?.LogError("Bulk Upsert of {count} Entities failed with status code {code}.", entities.Count(), response.StatusCode);
-                return TrackZeroOperationResult<IEnumerable<Entity>>.GenericFailure;
+                return TrackZeroOperationResult<Dictionary<QueueEntityError, int>>.GenericFailure;
             }
             catch (Exception ex)
             {
@@ -198,7 +220,7 @@ namespace TrackZero
                 if (throwExceptions)
                     throw;
 
-                return new TrackZeroOperationResult<IEnumerable<Entity>>(ex);
+                return new TrackZeroOperationResult<Dictionary<QueueEntityError, int>>(ex);
             }
             finally
             {

@@ -21,8 +21,7 @@ namespace TrackZero
             serviceCollection
                 .AddHttpClient("TrackZero", c =>
                 {
-                    c.BaseAddress = new Uri("https://betaapi.trackzero.io");
-                    //c.BaseAddress = new Uri("https://localhost:5001");
+                    c.BaseAddress = new Uri("https://api.trackzero.io");
                     c.DefaultRequestHeaders.Add("X-API-KEY", projectApiKey);
                     c.DefaultRequestHeaders.Add("X-API-VERSION", "1.0");
                 });

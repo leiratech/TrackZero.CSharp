@@ -5,6 +5,7 @@ using TrackZero.Extensions;
 
 namespace TrackZero.DataTransfer
 {
+
     public class Entity : IEntityReference
     {
         /// <summary>
@@ -31,13 +32,20 @@ namespace TrackZero.DataTransfer
 
         public Entity AddEntityReferencedAttribute(string attributeName, string type, object id)
         {
-            CustomAttributes.TryAdd(attributeName, new EntityReference(type, id.ValidateTypeForPremitiveValue()));
+            if (CustomAttributes.ContainsKey(attributeName))
+            {
+                ((List<EntityReference>)CustomAttributes[attributeName]).Add(new EntityReference(type, id.ValidateTypeForPremitiveValue()));
+            }
+            else
+            {
+                CustomAttributes.TryAdd(attributeName, new List<EntityReference>() { new EntityReference(type, id.ValidateTypeForPremitiveValue()) });
+            }
             return this;
         }
 
         public Entity AddAttribute(string attributeName, object value)
         {
-            CustomAttributes.TryAdd(attributeName, value.ValidateTypeForPremitiveValueOrReferenceType());
+            CustomAttributes.TryAdd(attributeName, value.ValidateTypeForPremitiveValue());
             return this;
         }
 

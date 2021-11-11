@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using TrackZero.Abstract;
+using TrackZero.DataTransfer;
 
 namespace TrackZero.Extensions
 {
@@ -19,12 +21,11 @@ namespace TrackZero.Extensions
 
         internal static object ValidateTypeForPremitiveValueOrReferenceType(this object obj)
         {
-            if (obj != default && !allowedTypes.Contains(obj.GetType()) && !(obj is IEntityReference))
+            if (obj != default && !allowedTypes.Contains(obj.GetType()) && !(obj is EntityReference[]) && !(obj is List<EntityReference>) && !(obj is HashSet<EntityReference>))
             {
-                throw new InvalidOperationException($"Type {obj.GetType().Name} is not a premitive type. Only premitive types and IEntityReference objects are allowed");
+                throw new InvalidOperationException($"Type {obj.GetType().Name} is not a premitive type. Only premitive types and IEntityReference[] objects are allowed");
             }
-
-            if (obj is DateTime dt)
+                        if (obj is DateTime dt)
             {
                 obj = new DateTimeOffset(dt).UtcDateTime;
             }
