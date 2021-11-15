@@ -42,7 +42,8 @@ namespace TrackZero.Example1
                 // For more details on ConfigureAwait, check this great blog post https://devblogs.microsoft.com/dotnet/configureawait-faq/
                 .ConfigureAwait(false);
 
-
+            // delete the Entity "Order" with id 1 from TrackZero.
+            await trackZeroClient.DeleteEntityAsync(new EntityReference("Order", 1), analyticsSpaceId).ConfigureAwait(false);
             // In order for your customer to run analytics on the data, we need to create a session key then redirect them to the TrackZero Spaces portal.
             // We will need to specify the custoemr space id and the duration of the session. In this case the duration is 30 minutes.
             // the session duration cannot be less than 5 minutes or longer than 60 minutes.
