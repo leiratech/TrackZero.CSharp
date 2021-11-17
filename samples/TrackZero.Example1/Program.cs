@@ -33,8 +33,8 @@ namespace TrackZero.Example1
                 .AddAttribute("Time", DateTimeOffset.UtcNow)
                 // Adding Reference Attributes that will link to other entities.
                 // Since the Entity of Type "Product" and Id 758 doesn't exist in our project, it will be created automatically. We can add more attributes to it later.
-                .AddEntityReferencedAttribute("Item1", "Product", 758)
-                .AddEntityReferencedAttribute("Item2", "Product", 214);
+                .AddEntityReferencedAttribute("Items", "Product", 758)
+                .AddEntityReferencedAttribute("Items", "Product", 214);
 
             // Send the Entity to TrackZero
             await trackZeroClient.UpsertEntityAsync(order, analyticsSpaceId)
