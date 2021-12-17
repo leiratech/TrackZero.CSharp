@@ -3,20 +3,21 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <PackageId>Leira.TrackZero.NetCore</PackageId>
-    <Version>2.1.0</Version>
+    <Version>2.2.0</Version>
     <Authors>Adel Alzubeir</Authors>
     <Description>TrackZero is an advanced Business Intelligence platform that allows you to provide your customers with deep insights.</Description>
     <Copyright>2021 LEİRA BİLİŞİM TİCARET LİMİTED ŞİRKETİ</Copyright>
     <Company>LEİRA BİLİŞİM TİCARET LİMİTED ŞİRKETİ</Company>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>Initial</PackageReleaseNotes>
+    <PackageReleaseNotes>Adds Automatic Geographical Data Attachments for Maps Charting.</PackageReleaseNotes>
     <PackageProjectUrl>https://trackzero.io</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <AssemblyVersion>2.1.0.0</AssemblyVersion>
-    <FileVersion>2.1.0.0</FileVersion>
+    <AssemblyVersion>2.2.0.0</AssemblyVersion>
+    <FileVersion>2.2.0.0</FileVersion>
     <RepositoryUrl>https://github.com/leiratech/TrackZero.DotNetCore</RepositoryUrl>
     <PackageIcon>TrackZeroSquare.png</PackageIcon>
+    <PackageTags>Customer Analytics; Customer Self Service BI; Customer Report Builder</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
