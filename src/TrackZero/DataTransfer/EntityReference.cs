@@ -4,6 +4,10 @@ using TrackZero.Extensions;
 
 namespace TrackZero.DataTransfer
 {
+    /// <summary>
+    /// Creates a relationship between two entities. Similar to a Master-Details / Details-Details in RDBMS.
+    /// Please use AddEntityReferencedAttribute(string, string, object) to create such relationship to avoid data rejection.
+    /// </summary>
     public class EntityReference : IEntityReference
     {
         /// <summary>
@@ -23,6 +27,10 @@ namespace TrackZero.DataTransfer
 
         }
 
+        /// <summary>
+        /// Validates the object content.
+        /// </summary>
+        /// <exception cref="ArgumentNullException"></exception>
         public void Validate()
         {
             Id.ValidateTypeForPremitiveValue();
@@ -37,7 +45,14 @@ namespace TrackZero.DataTransfer
             }
         }
 
+        /// <summary>
+        /// The id of the referenced entity.
+        /// </summary>
         public object Id { get; set; }
+
+        /// <summary>
+        /// The type of the referenced entity.
+        /// </summary>
         public string Type { get; set; }
     }
 }

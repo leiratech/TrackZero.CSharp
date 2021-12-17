@@ -13,16 +13,16 @@ namespace TrackZero
         /// 
         /// </summary>
         /// <param name="serviceCollection"></param>
-        /// <param name="projectApiKey"></param>
+        /// <param name="accountApiKey"></param>
         /// <param name="throwExcpetions"></param>
         /// <returns></returns>
-        public static IServiceCollection AddTrackZero(this IServiceCollection serviceCollection, string projectApiKey, bool throwExcpetions = true)
+        public static IServiceCollection AddTrackZero(this IServiceCollection serviceCollection, string accountApiKey, bool throwExcpetions = true)
         {
             serviceCollection
                 .AddHttpClient("TrackZero", c =>
                 {
                     c.BaseAddress = new Uri("https://api.trackzero.io");
-                    c.DefaultRequestHeaders.Add("X-API-KEY", projectApiKey);
+                    c.DefaultRequestHeaders.Add("X-API-KEY", accountApiKey);
                     c.DefaultRequestHeaders.Add("X-API-VERSION", "1.0");
                 });
             return serviceCollection.AddSingleton<TrackZeroClient>(sp =>

@@ -26,36 +26,39 @@ namespace TrackZero.Example1
             await trackZeroClient.CreateAnalyticsSpaceAsync(analyticsSpaceId);
 
             // Prepare your entity (Order object), if we already have an entity of Type "Order" and Id 1, this will update the information stored in TrackZero with the ones we set here.
-            Entity order = new Entity("Order", 1)
+            Entity order = new Entity("Orders", 1)
                 // Adding attributes (Properties) to send to TrackZero and make it reportable.
                 .AddAttribute("Quantity", 99.0)
                 .AddAttribute("Total Amount", 99.0)
                 .AddAttribute("Time", DateTimeOffset.UtcNow)
                 // Adding Reference Attributes that will link to other entities.
                 // Since the Entity of Type "Product" and Id 758 doesn't exist in our project, it will be created automatically. We can add more attributes to it later.
-                .AddEntityReferencedAttribute("Items", "Product", 758)
-                .AddEntityReferencedAttribute("Items", "Product", 214)
+                .AddEntityReferencedAttribute("Items", "Products", 758)
+                .AddEntityReferencedAttribute("Items", "Products", 214)
                 // Adding reference to the user who made the order
-                .AddEntityReferencedAttribute("Order By", "Users", 245);
+                .AddEntityReferencedAttribute("Order By", "Users", 245)
+                // To link this order to a country, you can simple pass the lat and long of the order and TrackZero will automatically manage this data appropriately to allow Map Charts.
+                .AddAutomaticallyTranslatedGeoPoint(41.037086118695825, 28.98489855136287);
 
             // Send the Entity to TrackZero
             await trackZeroClient.UpsertEntityAsync(order, analyticsSpaceId)
                 // If the context/scheduler do not matter to your application flow, use ConfigureAwait(false) as it aids performance.
                 // For more details on ConfigureAwait, check this great blog post https://devblogs.microsoft.com/dotnet/configureawait-faq/
                 .ConfigureAwait(false);
-
-            // delete the Entity "Order" with id 1 from TrackZero.
-            await trackZeroClient.DeleteEntityAsync(new EntityReference("Order", 1), analyticsSpaceId).ConfigureAwait(false);
+           
             // In order for your customer to run analytics on the data, we need to create a session key then redirect them to the TrackZero Spaces portal.
             // We will need to specify the custoemr space id and the duration of the session. In this case the duration is 30 minutes.
             // the session duration cannot be less than 5 minutes or longer than 60 minutes.
             var session = await trackZeroClient.CreateAnalyticsSpacePortalSessionAsync(analyticsSpaceId, TimeSpan.FromMinutes(30));
-            
+
             // redirect the user to the url stored in session.OperationData.Url
-            // code omitted as this is not a backend practice.
+            // code omitted as this is a frontend practice.
+
+            // delete the Entity "Order" with id 1 from TrackZero.
+            await trackZeroClient.DeleteEntityAsync(new EntityReference("Orders", 1), analyticsSpaceId).ConfigureAwait(false);
 
             // Cleanup.
-            await trackZeroClient.DeleteAnalyticsSpaceAsync("7766");
+            await trackZeroClient.DeleteAnalyticsSpaceAsync(analyticsSpaceId).ConfigureAwait(false);
 
         }
     }

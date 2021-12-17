@@ -5,7 +5,9 @@ using TrackZero.Extensions;
 
 namespace TrackZero.DataTransfer
 {
-
+    /// <summary>
+    /// Each Entity represents a data object in TrackZero.
+    /// </summary>
     public class Entity : IEntityReference
     {
         /// <summary>
@@ -24,12 +26,24 @@ namespace TrackZero.DataTransfer
             CustomAttributes = attributes ?? new Dictionary<string, object>();
         }
 
+        /// <summary>
+        /// Creates a new Entity with a sepcific type and id.
+        /// </summary>
+        /// <param name="type">The type of the Entity</param>
+        /// <param name="id">The id of the Entity.</param>
         public Entity(string type, object id)
         {
             Type = type;
             Id = id;
         }
 
+        /// <summary>
+        /// Adds an attribute that references another entity.
+        /// </summary>
+        /// <param name="attributeName">The attribute name</param>
+        /// <param name="type">The Referenced Entity Type</param>
+        /// <param name="id">The Referenced Entity Id, value can be a string, int, long, double or Guid</param>
+        /// <returns></returns>
         public Entity AddEntityReferencedAttribute(string attributeName, string type, object id)
         {
             if (CustomAttributes.ContainsKey(attributeName))
@@ -43,15 +57,37 @@ namespace TrackZero.DataTransfer
             return this;
         }
 
+        /// <summary>
+        /// Adds an attribute with a value.
+        /// </summary>
+        /// <param name="attributeName">The attribute name</param>
+        /// <param name="value">The value of the attribute, this can be any premitive value</param>
+        /// <returns></returns>
         public Entity AddAttribute(string attributeName, object value)
         {
             CustomAttributes.TryAdd(attributeName, value.ValidateTypeForPremitiveValue());
             return this;
         }
 
+        /// <summary>
+        /// Please use the provided methods to add Attributes. Adding directly might result in data rejection.
+        /// </summary>
         public Dictionary<string, object> CustomAttributes { get; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// The Type of the entity.
+        /// </summary>
         public string Type { get; set; }
+
+        /// <summary>
+        /// The id of the entity.
+        /// </summary>
         public object Id { get; private set; }
+
+        /// <summary>
+        /// Please use AddAutomaticallyTranslatedGeoPoint(double, double) to add a Geographically Translated Point. Adding directly might result in data rejection. 
+        /// </summary>
+        public GeographyAutomaticReferencing AutoGeography { get; set; }
 
         internal void ValidateAndCorrect()
         {
@@ -64,7 +100,17 @@ namespace TrackZero.DataTransfer
 
 
         }
+
+        /// <summary>
+        /// Automatically Translates a GeoPoint (Lat, Long) to Country and State and links them as Referenced Entity.
+        /// </summary>
+        /// <param name="latitude"></param>
+        /// <param name="longitude"></param>
+        /// <returns></returns>
+        public Entity AddAutomaticallyTranslatedGeoPoint(double latitude, double longitude)
+        {
+            this.AutoGeography = new GeographyAutomaticReferencing(latitude, longitude);
+            return this;
+        }
     }
-
-
 }

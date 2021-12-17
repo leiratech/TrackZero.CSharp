@@ -114,7 +114,7 @@ namespace TrackZero
         /// </summary>
         /// <param name="entity">Entity to create. Any EntityReference in CustomAttributes will automatically be created if do not exist.</param>
         /// <param name="analyticsSpaceId">The analytics space id that will hosts this entity.</param>
-        /// <returns></returns>
+        /// <returns>Returns the operation results indicating success or failure along with the Entity object.</returns>
         public async Task<TrackZeroOperationResult<Entity>> UpsertEntityAsync(Entity entity, string analyticsSpaceId)
         {
             if (string.IsNullOrEmpty(analyticsSpaceId))
@@ -163,7 +163,8 @@ namespace TrackZero
         /// <param name="entities"></param>
         /// <param name="analyticsSpaceId">The analytics space id that will hosts this entity.</param>
         /// <returns></returns>
-        public async Task<TrackZeroOperationResult<Dictionary<QueueEntityError, int>>> UpsertEntityAsync(IEnumerable<Entity> entities, string analyticsSpaceId)
+        [Obsolete]
+        public async Task<TrackZeroOperationResult<Dictionary<BulkUpsertEntityError, int>>> UpsertEntityAsync(IEnumerable<Entity> entities, string analyticsSpaceId)
         {
             if (string.IsNullOrEmpty(analyticsSpaceId))
             {
@@ -171,16 +172,16 @@ namespace TrackZero
                 if (throwExceptions)
                     throw ex;
 
-                return new TrackZeroOperationResult<Dictionary<QueueEntityError, int>> (ex);
+                return new TrackZeroOperationResult<Dictionary<BulkUpsertEntityError, int>>(ex);
             }
 
-            if (entities.Count() > 200)
+            if (entities.Count() > 1000)
             {
                 var ex = new ArgumentException($"'{nameof(entities)}' cannot contain more than 200 items.", nameof(entities));
                 if (throwExceptions)
                     throw ex;
 
-                return new TrackZeroOperationResult<Dictionary<QueueEntityError, int>>(ex);
+                return new TrackZeroOperationResult<Dictionary<BulkUpsertEntityError, int>>(ex);
             }
 
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
@@ -198,20 +199,26 @@ namespace TrackZero
                     logger?.LogInformation(await response.Content.ReadAsStringAsync());
                     logger?.LogInformation("-----------------------------------------------------------------------");
                     logger?.LogInformation("Bulk Upsert of {count} Entities successfull.", entities.Count());
-                    var resultGroups = Newtonsoft.Json.JsonConvert.DeserializeObject<List<QueueEntityError>>(await response.Content.ReadAsStringAsync().ConfigureAwait(false)).GroupBy(t => t);
+                    //var resultGroups = Newtonsoft.Json.JsonConvert.DeserializeObject<List<QueueEntityError>>(await response.Content.ReadAsStringAsync().ConfigureAwait(false)).GroupBy(t => t);
 
-                    Dictionary<QueueEntityError, int> parsedResponse = new Dictionary<QueueEntityError, int>();
-                    foreach (var group in resultGroups)
-                    {
-                        parsedResponse.Add(group.Key, group.Count());
-                    }
-                    return new TrackZeroOperationResult<Dictionary<QueueEntityError, int>> (parsedResponse);
+                    //Dictionary<QueueEntityError, int> parsedResponse = new Dictionary<QueueEntityError, int>();
+                    //foreach (var group in resultGroups)
+                    //{
+                    //    parsedResponse.Add(group.Key, group.Count());
+                    //}
+                    return new TrackZeroOperationResult<Dictionary<BulkUpsertEntityError, int>>(new Dictionary<BulkUpsertEntityError, int>() { { BulkUpsertEntityError.None, entities.Count() } });
                 }
+                else
+                {
+
+                }
+
                 logger?.LogInformation("-----------------------------------------------------------------------");
-                logger?.LogInformation(await response.Content.ReadAsStringAsync());
+                string r = await response.Content.ReadAsStringAsync();
+                logger?.LogInformation(r);
                 logger?.LogInformation("-----------------------------------------------------------------------");
                 logger?.LogError("Bulk Upsert of {count} Entities failed with status code {code}.", entities.Count(), response.StatusCode);
-                return TrackZeroOperationResult<Dictionary<QueueEntityError, int>>.GenericFailure;
+                return TrackZeroOperationResult<Dictionary<BulkUpsertEntityError, int>>.GenericFailure;
             }
             catch (Exception ex)
             {
@@ -220,7 +227,7 @@ namespace TrackZero
                 if (throwExceptions)
                     throw;
 
-                return new TrackZeroOperationResult<Dictionary<QueueEntityError, int>>(ex);
+                return new TrackZeroOperationResult<Dictionary<BulkUpsertEntityError, int>>(ex);
             }
             finally
             {
@@ -229,9 +236,9 @@ namespace TrackZero
         }
 
         /// <summary>
-        /// 
+        /// Creates a new Analytics Space
         /// </summary>
-        /// <param name="analyticsSpaceId"></param>
+        /// <param name="analyticsSpaceId">The id of the analytics space to create.</param>
         /// <returns></returns>
         public async Task<TrackZeroOperationResult> CreateAnalyticsSpaceAsync(string analyticsSpaceId)
         {
@@ -274,7 +281,8 @@ namespace TrackZero
         }
 
         /// <summary>
-        /// 
+        /// Deletes the analytics space and all of its data.
+        /// CAUTION: This operation is irreversable.
         /// </summary>
         /// <param name="analyticsSpaceId"></param>
         /// <returns></returns>
@@ -321,8 +329,8 @@ namespace TrackZero
         /// <summary>
         /// Creates a customer portal session.
         /// </summary>
-        /// <param name="analyticsSpaceId"></param>
-        /// <param name="sessionDuration"></param>
+        /// <param name="analyticsSpaceId">The analytics space id to allow access to.</param>
+        /// <param name="sessionDuration">The session duration in seconds. This can be between 300 and 3600</param>
         /// <returns></returns>
         public async Task<TrackZeroOperationResult<AnalyticsSpacePortalSession>> CreateAnalyticsSpacePortalSessionAsync(string analyticsSpaceId, TimeSpan sessionDuration)
         {
