@@ -21,7 +21,7 @@ namespace TrackZero
         /// <summary>
         /// 
         /// </summary>
-        public static TrackZeroClient Instance { get; internal set; }
+        //public static TrackZeroClient Instance { get; internal set; }
         private readonly IHttpClientFactory clientFactory;
         private readonly ILogger logger;
         private readonly bool throwExceptions;
@@ -38,7 +38,7 @@ namespace TrackZero
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             this.logger = loggerFactory?.CreateLogger<TrackZeroClient>();
             this.throwExceptions = throwExceptions;
-            Instance = this;
+            //Instance = this;
         }
 
         /// <summary>

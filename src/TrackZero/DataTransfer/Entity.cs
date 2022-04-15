@@ -107,9 +107,13 @@ namespace TrackZero.DataTransfer
         /// <param name="latitude"></param>
         /// <param name="longitude"></param>
         /// <returns></returns>
-        public Entity AddAutomaticallyTranslatedGeoPoint(double latitude, double longitude)
+        public Entity AddAutomaticallyTranslatedGeoPoint(double latitude, double longitude, bool includeActualGeoPointInEntity = false)
         {
             this.AutoGeography = new GeographyAutomaticReferencing(latitude, longitude);
+            if (includeActualGeoPointInEntity)
+            {
+                AddAttribute("GeoPoint (Automatic)", $"{latitude}, {longitude}");
+            }
             return this;
         }
     }
