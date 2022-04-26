@@ -163,7 +163,7 @@ namespace TrackZero
         /// <param name="entities"></param>
         /// <param name="analyticsSpaceId">The analytics space id that will hosts this entity.</param>
         /// <returns></returns>
-        [Obsolete]
+        [Obsolete("This method requires a special permission granted by TrackZero staff for special usecases. Please contact support@trackzero.io with details on your usecase.")]
         public async Task<TrackZeroOperationResult<Dictionary<BulkUpsertEntityError, int>>> UpsertEntityAsync(IEnumerable<Entity> entities, string analyticsSpaceId)
         {
             if (string.IsNullOrEmpty(analyticsSpaceId))
@@ -332,7 +332,7 @@ namespace TrackZero
         /// <param name="analyticsSpaceId">The analytics space id to allow access to.</param>
         /// <param name="sessionDuration">The session duration in seconds. This can be between 300 and 3600</param>
         /// <returns></returns>
-        public async Task<TrackZeroOperationResult<AnalyticsSpacePortalSession>> CreateAnalyticsSpacePortalSessionAsync(string analyticsSpaceId, TimeSpan sessionDuration)
+        public async Task<TrackZeroOperationResult<AnalyticsSpacePortalSession>> CreateAnalyticsSpacePortalSessionAsync(string analyticsSpaceId, TimeSpan sessionDuration, bool @readonly = false, bool allowAnalyticsEmails = true)
         {
             if (string.IsNullOrEmpty(analyticsSpaceId))
             {
@@ -353,10 +353,9 @@ namespace TrackZero
             HttpClient httpClient = clientFactory.CreateClient("TrackZero");
             try
             {
-                var response = await httpClient.GetAsync($"/analyticsSpaces/session?analyticsSpaceId={HttpUtility.UrlEncode(analyticsSpaceId)}&ttl={sessionDuration.TotalSeconds}").ConfigureAwait(false);
+                var response = await httpClient.GetAsync($"/analyticsSpaces/session?analyticsSpaceId={HttpUtility.UrlEncode(analyticsSpaceId)}&ttl={sessionDuration.TotalSeconds}&readonly={@readonly}&allowAnalyticsEmails={allowAnalyticsEmails}").ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
-
                     return new TrackZeroOperationResult<AnalyticsSpacePortalSession>(JsonConvert.DeserializeObject<AnalyticsSpacePortalSession>(await response.Content.ReadAsStringAsync().ConfigureAwait(false)));
                 }
 
